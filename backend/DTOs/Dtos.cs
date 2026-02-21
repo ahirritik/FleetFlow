@@ -4,6 +4,12 @@ namespace FleetFlow.API.DTOs;
 public record LoginRequest(string Email, string Password);
 public record LoginResponse(string Token, string FullName, string Role);
 
+// ── User Management ──
+public record UserDto(int Id, string FullName, string Email, string Role, DateTime CreatedAt);
+public record UserCreateDto(string FullName, string Email, string Password, string Role);
+public record ForgotPasswordRequest(string Email);
+public record ResetPasswordRequest(string Token, string NewPassword);
+
 // ── Vehicle ──
 public record VehicleDto(int Id, string Name, string Model, string LicensePlate, string Type,
     double MaxCapacity, double Odometer, string Status, string Region, double AcquisitionCost, DateTime CreatedAt);

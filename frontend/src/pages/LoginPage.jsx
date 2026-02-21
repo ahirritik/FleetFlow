@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Truck, Eye, EyeOff } from 'lucide-react';
 import api from '../services/api';
@@ -78,6 +78,9 @@ export default function LoginPage() {
                     <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
                         {loading ? 'Signing in...' : 'Sign In'}
                     </button>
+                    <div style={{ textAlign: 'center', marginTop: '12px' }}>
+                        <Link to="/forgot-password" style={{ color: '#3b82f6', textDecoration: 'none', fontSize: '14px' }}>Forgot Password?</Link>
+                    </div>
                 </form>
                 <div className="login-footer">
                     <p>Demo Credentials</p>

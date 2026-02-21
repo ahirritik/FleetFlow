@@ -10,6 +10,8 @@ import MaintenanceLogs from './pages/MaintenanceLogs';
 import ExpenseFuel from './pages/ExpenseFuel';
 import DriverProfiles from './pages/DriverProfiles';
 import Analytics from './pages/Analytics';
+import UserManagement from './pages/UserManagement';
+import ForgotPassword from './pages/ForgotPassword';
 
 function ProtectedRoute({ children }) {
     const { user, loading } = useAuth();
@@ -29,6 +31,7 @@ function AppRoutes() {
     return (
         <Routes>
             <Route path="/login" element={user ? <Navigate to="/" /> : <LoginPage />} />
+            <Route path="/forgot-password" element={user ? <Navigate to="/" /> : <ForgotPassword />} />
             <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
                 <Route index element={<Dashboard />} />
                 <Route path="vehicles" element={<VehicleRegistry />} />
@@ -37,6 +40,7 @@ function AppRoutes() {
                 <Route path="expenses" element={<RoleRoute allowedRoles={['Manager', 'Dispatcher']}><ExpenseFuel /></RoleRoute>} />
                 <Route path="drivers" element={<RoleRoute allowedRoles={['Manager', 'SafetyOfficer']}><DriverProfiles /></RoleRoute>} />
                 <Route path="analytics" element={<RoleRoute allowedRoles={['Manager', 'Analyst']}><Analytics /></RoleRoute>} />
+                <Route path="users" element={<RoleRoute allowedRoles={['Manager']}><UserManagement /></RoleRoute>} />
             </Route>
         </Routes>
     );

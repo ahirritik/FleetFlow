@@ -1,7 +1,7 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
-    LayoutDashboard, Truck, Route, Wrench, Receipt, Users, BarChart3, LogOut, Menu, X
+    LayoutDashboard, Truck, Route, Wrench, Receipt, Users, BarChart3, LogOut, Menu, X, Shield
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -13,6 +13,7 @@ const navItems = [
     { to: '/expenses', label: 'Expenses', icon: Receipt, allowedRoles: ['Manager', 'Dispatcher'] },
     { to: '/drivers', label: 'Drivers', icon: Users, allowedRoles: ['Manager', 'SafetyOfficer'] },
     { to: '/analytics', label: 'Analytics', icon: BarChart3, allowedRoles: ['Manager', 'Analyst'] },
+    { to: '/users', label: 'Users', icon: Shield, allowedRoles: ['Manager'] },
 ];
 
 export default function Layout() {
