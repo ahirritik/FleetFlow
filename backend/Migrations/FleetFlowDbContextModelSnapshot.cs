@@ -22,6 +22,48 @@ namespace FleetFlow.API.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("FleetFlow.API.Models.AuditLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Details")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("EntityId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AuditLogs");
+                });
+
             modelBuilder.Entity("FleetFlow.API.Models.Driver", b =>
                 {
                     b.Property<int>("Id")
@@ -312,7 +354,7 @@ namespace FleetFlow.API.Migrations
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "admin@fleet.com",
                             FullName = "Admin Manager",
-                            PasswordHash = "$2a$11$Rc9MC2dAQyHXEPmU/GEn8eCR4fMhccriBchy3.xAvAwcx2d2S1XCS",
+                            PasswordHash = "$2a$11$tE7CHXCaHJg04cupjj.X7e/9YgluqevKrvFSUOewFoPFf/0PjCSwW",
                             Role = "Manager"
                         },
                         new
@@ -321,7 +363,7 @@ namespace FleetFlow.API.Migrations
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "dispatcher@fleet.com",
                             FullName = "Sarah Dispatcher",
-                            PasswordHash = "$2a$11$SRr/2YChuFBOJfttz23BwuYnvISc961wXhAx/epRMMjgcpMWdCNDq",
+                            PasswordHash = "$2a$11$JI0XLul2i4raNSV81E.8vuzGZy1azsh44ZmEV8KEVkqikj5L8gzgm",
                             Role = "Dispatcher"
                         },
                         new
@@ -330,7 +372,7 @@ namespace FleetFlow.API.Migrations
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "safety@fleet.com",
                             FullName = "Officer Mike",
-                            PasswordHash = "$2a$11$Ic.uLquUXzUVCB8XcvgzHO7fncNdm2yl2WN4ADwDLnWsHlnWbdhHq",
+                            PasswordHash = "$2a$11$qgyvU3jrvP7punP9cw.XwO6tKakzMEp/ydPxEYUwiGPYAaronZi/C",
                             Role = "SafetyOfficer"
                         },
                         new
@@ -339,7 +381,7 @@ namespace FleetFlow.API.Migrations
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "analyst@fleet.com",
                             FullName = "Emma Analyst",
-                            PasswordHash = "$2a$11$3xckbFIFfoLwx3Nv/MOR9eGghDErgjk7GxLmLN8P/GLNqeb25wd/W",
+                            PasswordHash = "$2a$11$TrHjq1wK3Q2SuEIrF0Mm5OrpaPVG/xt7bGBr57Kx3fiVh/hRjme9u",
                             Role = "Analyst"
                         });
                 });

@@ -15,6 +15,24 @@ public class ExpensesController : ControllerBase
     private readonly FleetFlowDbContext _db;
     public ExpensesController(FleetFlowDbContext db) => _db = db;
 
+    private async Task Audit(string action, string entityType, int entityId, string details)
+    {
+        var userIdString = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        var userId = int.TryParse(userIdString, out var id) ? id : 0;
+        var userName = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ?? "System";
+        _db.AuditLogs.Add(new AuditLog 
+        { 
+            UserId = userId, 
+            UserName = userName, 
+            Action = action, 
+            EntityType = entityType, 
+            EntityId = entityId, 
+            Details = details,
+            Timestamp = DateTime.UtcNow
+        });
+        await _db.SaveChangesAsync();
+    }
+
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] int? vehicleId, [FromQuery] int? tripId)
     {
@@ -50,6 +68,7 @@ public class ExpensesController : ControllerBase
 
         _db.Expenses.Add(expense);
         await _db.SaveChangesAsync();
+        await Audit("Created", "Expense", expense.Id, $"Logged {expense.Category} expense of ${expense.Cost} for vehicle {vehicle.Name}");
         return Ok(new ExpenseDto(expense.Id, expense.VehicleId, vehicle.Name, expense.TripId, expense.Category,
             expense.Liters, expense.Cost, expense.Date, expense.Notes));
     }
@@ -62,6 +81,7 @@ public class ExpensesController : ControllerBase
         if (e == null) return NotFound();
         _db.Expenses.Remove(e);
         await _db.SaveChangesAsync();
+        await Audit("Deleted", "Expense", id, $"Deleted expense log #{id}");
         return NoContent();
     }
 }

@@ -49,4 +49,5 @@ public record ExpenseCreateDto(int VehicleId, int? TripId, string Category, doub
 public record DashboardDto(int ActiveFleet, int MaintenanceAlerts, double UtilizationRate, int PendingCargo,
     int TotalVehicles, int TotalDrivers, int TotalTrips, double TotalRevenue);
 public record VehicleCostDto(int VehicleId, string VehicleName, string LicensePlate,
-    double FuelCost, double MaintenanceCost, double TotalCost, double Odometer, double CostPerKm, double AcquisitionCost, double Roi);
+    double FuelCost, double MaintenanceCost, double TotalCost, double Odometer, double CostPerKm, double AcquisitionCost, double Roi,
+    double TotalLiters, double FuelEfficiency);

@@ -1,24 +1,31 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api';
 import { Truck, AlertTriangle, Activity, Package, Users, MapPin, BarChart3 } from 'lucide-react';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+
+const COLORS = ['#3b82f6', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6'];
+const STATUS_COLORS = { Available: '#22c55e', OnTrip: '#3b82f6', InShop: '#f59e0b', Retired: '#6b7280' };
 
 export default function Dashboard() {
     const [dashboard, setDashboard] = useState(null);
     const [recentTrips, setRecentTrips] = useState([]);
+    const [breakdown, setBreakdown] = useState(null);
+    const [region, setRegion] = useState('');
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        loadData();
-    }, []);
+    useEffect(() => { loadData(); }, [region]);
 
     const loadData = async () => {
         try {
-            const [dashRes, tripsRes] = await Promise.all([
-                api.get('/analytics/dashboard'),
+            const params = region ? `?region=${region}` : '';
+            const [dashRes, tripsRes, breakdownRes] = await Promise.all([
+                api.get(`/analytics/dashboard${params}`),
                 api.get('/trips'),
+                api.get('/analytics/vehicle-breakdown'),
             ]);
             setDashboard(dashRes.data);
             setRecentTrips(tripsRes.data.slice(0, 5));
+            setBreakdown(breakdownRes.data);
         } catch (err) {
             console.error(err);
         } finally {
@@ -50,8 +57,19 @@ export default function Dashboard() {
     return (
         <div className="dashboard-page">
             <div className="page-header">
-                <h2>Command Center</h2>
-                <p>Real-time fleet oversight at a glance</p>
+                <div>
+                    <h2>Command Center</h2>
+                    <p>Real-time fleet oversight at a glance</p>
+                </div>
+                <div className="filters-bar">
+                    <select value={region} onChange={e => setRegion(e.target.value)}>
+                        <option value="">All Regions</option>
+                        <option value="North">North</option>
+                        <option value="East">East</option>
+                        <option value="West">West</option>
+                        <option value="South">South</option>
+                    </select>
+                </div>
             </div>
 
             <div className="kpi-grid">
@@ -78,6 +96,37 @@ export default function Dashboard() {
                     </div>
                 ))}
             </div>
+
+            {breakdown && (
+                <div className="charts-grid">
+                    <div className="chart-card">
+                        <h3>Fleet by Vehicle Type</h3>
+                        <ResponsiveContainer width="100%" height={250}>
+                            <PieChart>
+                                <Pie data={breakdown.byType} cx="50%" cy="50%" outerRadius={80} dataKey="value"
+                                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                                    {breakdown.byType.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                                </Pie>
+                                <Tooltip />
+                                <Legend />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+                    <div className="chart-card">
+                        <h3>Fleet by Status</h3>
+                        <ResponsiveContainer width="100%" height={250}>
+                            <PieChart>
+                                <Pie data={breakdown.byStatus} cx="50%" cy="50%" outerRadius={80} dataKey="value"
+                                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                                    {breakdown.byStatus.map((entry, i) => <Cell key={i} fill={STATUS_COLORS[entry.name] || COLORS[i % COLORS.length]} />)}
+                                </Pie>
+                                <Tooltip />
+                                <Legend />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+            )}
 
             <div className="dashboard-section">
                 <h3>Recent Trips</h3>

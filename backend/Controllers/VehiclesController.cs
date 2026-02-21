@@ -15,6 +15,14 @@ public class VehiclesController : ControllerBase
     private readonly FleetFlowDbContext _db;
     public VehiclesController(FleetFlowDbContext db) => _db = db;
 
+    private async Task Audit(string action, string entityType, int entityId, string details)
+    {
+        var userId = int.TryParse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0;
+        var userName = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ?? "System";
+        _db.AuditLogs.Add(new AuditLog { UserId = userId, UserName = userName, Action = action, EntityType = entityType, EntityId = entityId, Details = details });
+        await _db.SaveChangesAsync();
+    }
+
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] string? type, [FromQuery] string? status, [FromQuery] string? region)
     {
@@ -56,6 +64,7 @@ public class VehiclesController : ControllerBase
 
         _db.Vehicles.Add(vehicle);
         await _db.SaveChangesAsync();
+        await Audit("Created", "Vehicle", vehicle.Id, $"Created vehicle '{vehicle.Name}' ({vehicle.LicensePlate})");
         return CreatedAtAction(nameof(Get), new { id = vehicle.Id },
             new VehicleDto(vehicle.Id, vehicle.Name, vehicle.Model, vehicle.LicensePlate, vehicle.Type,
                 vehicle.MaxCapacity, vehicle.Odometer, vehicle.Status, vehicle.Region, vehicle.AcquisitionCost, vehicle.CreatedAt));
@@ -75,6 +84,7 @@ public class VehiclesController : ControllerBase
         v.Type = dto.Type; v.MaxCapacity = dto.MaxCapacity; v.Region = dto.Region;
         v.AcquisitionCost = dto.AcquisitionCost;
         await _db.SaveChangesAsync();
+        await Audit("Updated", "Vehicle", v.Id, $"Updated vehicle '{v.Name}'");
         return Ok(new VehicleDto(v.Id, v.Name, v.Model, v.LicensePlate, v.Type, v.MaxCapacity,
             v.Odometer, v.Status, v.Region, v.AcquisitionCost, v.CreatedAt));
     }
@@ -92,6 +102,7 @@ public class VehiclesController : ControllerBase
 
         v.Status = req.Status;
         await _db.SaveChangesAsync();
+        await Audit("StatusChanged", "Vehicle", v.Id, $"Status changed to '{req.Status}'");
         return Ok(new VehicleDto(v.Id, v.Name, v.Model, v.LicensePlate, v.Type, v.MaxCapacity,
             v.Odometer, v.Status, v.Region, v.AcquisitionCost, v.CreatedAt));
     }
@@ -106,6 +117,7 @@ public class VehiclesController : ControllerBase
 
         _db.Vehicles.Remove(v);
         await _db.SaveChangesAsync();
+        await Audit("Deleted", "Vehicle", id, $"Deleted vehicle '{v.Name}' ({v.LicensePlate})");
         return NoContent();
     }
 }

@@ -12,6 +12,7 @@ import DriverProfiles from './pages/DriverProfiles';
 import Analytics from './pages/Analytics';
 import UserManagement from './pages/UserManagement';
 import ForgotPassword from './pages/ForgotPassword';
+import AuditTrail from './pages/AuditTrail';
 
 function ProtectedRoute({ children }) {
     const { user, loading } = useAuth();
@@ -40,6 +41,7 @@ function AppRoutes() {
                 <Route path="expenses" element={<RoleRoute allowedRoles={['Manager', 'Dispatcher']}><ExpenseFuel /></RoleRoute>} />
                 <Route path="drivers" element={<RoleRoute allowedRoles={['Manager', 'SafetyOfficer']}><DriverProfiles /></RoleRoute>} />
                 <Route path="analytics" element={<RoleRoute allowedRoles={['Manager', 'Analyst']}><Analytics /></RoleRoute>} />
+                <Route path="audit" element={<RoleRoute allowedRoles={['Manager']}><AuditTrail /></RoleRoute>} />
                 <Route path="users" element={<RoleRoute allowedRoles={['Manager']}><UserManagement /></RoleRoute>} />
             </Route>
         </Routes>

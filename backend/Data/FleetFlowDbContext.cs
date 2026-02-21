@@ -19,6 +19,7 @@ public class FleetFlowDbContext : DbContext
     public DbSet<Trip> Trips => Set<Trip>();
     public DbSet<MaintenanceLog> MaintenanceLogs => Set<MaintenanceLog>();
     public DbSet<Expense> Expenses => Set<Expense>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

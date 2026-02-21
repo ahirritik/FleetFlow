@@ -15,6 +15,24 @@ public class DriversController : ControllerBase
     private readonly FleetFlowDbContext _db;
     public DriversController(FleetFlowDbContext db) => _db = db;
 
+    private async Task Audit(string action, string entityType, int entityId, string details)
+    {
+        var userIdString = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        var userId = int.TryParse(userIdString, out var id) ? id : 0;
+        var userName = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ?? "System";
+        _db.AuditLogs.Add(new AuditLog 
+        { 
+            UserId = userId, 
+            UserName = userName, 
+            Action = action, 
+            EntityType = entityType, 
+            EntityId = entityId, 
+            Details = details,
+            Timestamp = DateTime.UtcNow
+        });
+        await _db.SaveChangesAsync();
+    }
+
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] string? status, [FromQuery] string? category)
     {
@@ -55,6 +73,7 @@ public class DriversController : ControllerBase
 
         _db.Drivers.Add(driver);
         await _db.SaveChangesAsync();
+        await Audit("Created", "Driver", driver.Id, $"Created driver profile for {driver.FullName}");
         return CreatedAtAction(nameof(Get), new { id = driver.Id },
             new DriverDto(driver.Id, driver.FullName, driver.LicenseNumber, driver.LicenseExpiry,
                 driver.LicenseCategory, driver.Phone, driver.Status, driver.SafetyScore, driver.TripCount, driver.CompletedTrips, driver.CreatedAt));
@@ -74,6 +93,7 @@ public class DriversController : ControllerBase
         d.LicenseExpiry = dto.LicenseExpiry; d.LicenseCategory = dto.LicenseCategory;
         d.Phone = dto.Phone;
         await _db.SaveChangesAsync();
+        await Audit("Updated", "Driver", d.Id, $"Updated driver profile for {d.FullName}");
         return Ok(new DriverDto(d.Id, d.FullName, d.LicenseNumber, d.LicenseExpiry, d.LicenseCategory,
             d.Phone, d.Status, d.SafetyScore, d.TripCount, d.CompletedTrips, d.CreatedAt));
     }
@@ -91,6 +111,7 @@ public class DriversController : ControllerBase
 
         d.Status = req.Status;
         await _db.SaveChangesAsync();
+        await Audit("StatusChanged", "Driver", d.Id, $"Driver status changed to '{req.Status}' for {d.FullName}");
         return Ok(new DriverDto(d.Id, d.FullName, d.LicenseNumber, d.LicenseExpiry, d.LicenseCategory,
             d.Phone, d.Status, d.SafetyScore, d.TripCount, d.CompletedTrips, d.CreatedAt));
     }
@@ -105,6 +126,7 @@ public class DriversController : ControllerBase
 
         _db.Drivers.Remove(d);
         await _db.SaveChangesAsync();
+        await Audit("Deleted", "Driver", id, $"Deleted driver profile for {d.FullName}");
         return NoContent();
     }
 }

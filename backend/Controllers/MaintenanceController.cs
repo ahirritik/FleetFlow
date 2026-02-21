@@ -15,6 +15,24 @@ public class MaintenanceController : ControllerBase
     private readonly FleetFlowDbContext _db;
     public MaintenanceController(FleetFlowDbContext db) => _db = db;
 
+    private async Task Audit(string action, string entityType, int entityId, string details)
+    {
+        var userIdString = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        var userId = int.TryParse(userIdString, out var id) ? id : 0;
+        var userName = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ?? "System";
+        _db.AuditLogs.Add(new AuditLog 
+        { 
+            UserId = userId, 
+            UserName = userName, 
+            Action = action, 
+            EntityType = entityType, 
+            EntityId = entityId, 
+            Details = details,
+            Timestamp = DateTime.UtcNow
+        });
+        await _db.SaveChangesAsync();
+    }
+
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] int? vehicleId)
     {
@@ -47,6 +65,7 @@ public class MaintenanceController : ControllerBase
 
         _db.MaintenanceLogs.Add(log);
         await _db.SaveChangesAsync();
+        await Audit("Created", "MaintenanceLog", log.Id, $"Scheduled {log.ServiceType} for vehicle {vehicle.Name}");
         return Ok(new MaintenanceLogDto(log.Id, log.VehicleId, vehicle.Name, log.ServiceType, log.Description, log.Cost, log.Date, log.IsCompleted));
     }
 
@@ -68,6 +87,7 @@ public class MaintenanceController : ControllerBase
             log.Vehicle!.Status = "Available";
 
         await _db.SaveChangesAsync();
+        await Audit("Completed", "MaintenanceLog", log.Id, $"Completed {log.ServiceType} for vehicle {log.Vehicle!.Name}");
         return Ok(new MaintenanceLogDto(log.Id, log.VehicleId, log.Vehicle!.Name, log.ServiceType, log.Description, log.Cost, log.Date, log.IsCompleted));
     }
 
@@ -79,6 +99,7 @@ public class MaintenanceController : ControllerBase
         if (log == null) return NotFound();
         _db.MaintenanceLogs.Remove(log);
         await _db.SaveChangesAsync();
+        await Audit("Deleted", "MaintenanceLog", id, $"Deleted maintenance log #{id}");
         return NoContent();
     }
 }

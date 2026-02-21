@@ -15,6 +15,24 @@ public class TripsController : ControllerBase
     private readonly FleetFlowDbContext _db;
     public TripsController(FleetFlowDbContext db) => _db = db;
 
+    private async Task Audit(string action, string entityType, int entityId, string details)
+    {
+        var userIdString = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        var userId = int.TryParse(userIdString, out var id) ? id : 0;
+        var userName = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ?? "System";
+        _db.AuditLogs.Add(new AuditLog 
+        { 
+            UserId = userId, 
+            UserName = userName, 
+            Action = action, 
+            EntityType = entityType, 
+            EntityId = entityId, 
+            Details = details,
+            Timestamp = DateTime.UtcNow
+        });
+        await _db.SaveChangesAsync();
+    }
+
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] string? status)
     {
@@ -83,6 +101,8 @@ public class TripsController : ControllerBase
         _db.Trips.Add(trip);
         await _db.SaveChangesAsync();
 
+        await Audit("Created", "Trip", trip.Id, $"Created trip from {trip.Origin} to {trip.Destination} for vehicle {vehicle.Name}");
+
         return CreatedAtAction(nameof(Get), new { id = trip.Id },
             new TripDto(trip.Id, trip.VehicleId, vehicle.Name, vehicle.LicensePlate,
                 trip.DriverId, driver.FullName, trip.Origin, trip.Destination,
@@ -105,6 +125,7 @@ public class TripsController : ControllerBase
         trip.Driver.TripCount++;
 
         await _db.SaveChangesAsync();
+        await Audit("Dispatched", "Trip", trip.Id, $"Dispatched trip #{trip.Id} with driver {trip.Driver.FullName}");
         return Ok(new TripDto(trip.Id, trip.VehicleId, trip.Vehicle.Name, trip.Vehicle.LicensePlate,
             trip.DriverId, trip.Driver.FullName, trip.Origin, trip.Destination,
             trip.CargoWeight, trip.CargoDescription, trip.Status, trip.StartOdometer, trip.EndOdometer,
@@ -127,7 +148,13 @@ public class TripsController : ControllerBase
         trip.Driver!.Status = "OnDuty";
         trip.Driver.CompletedTrips++;
 
+        // Auto-calculate safety score
+        trip.Driver.SafetyScore = trip.Driver.TripCount > 0
+            ? Math.Round((double)trip.Driver.CompletedTrips / trip.Driver.TripCount * 100, 1)
+            : 100;
+
         await _db.SaveChangesAsync();
+        await Audit("Completed", "Trip", trip.Id, $"Completed trip #{trip.Id}. End odometer: {dto.EndOdometer}");
         return Ok(new TripDto(trip.Id, trip.VehicleId, trip.Vehicle.Name, trip.Vehicle.LicensePlate,
             trip.DriverId, trip.Driver.FullName, trip.Origin, trip.Destination,
             trip.CargoWeight, trip.CargoDescription, trip.Status, trip.StartOdometer, trip.EndOdometer,
@@ -147,10 +174,16 @@ public class TripsController : ControllerBase
         {
             trip.Vehicle!.Status = "Available";
             trip.Driver!.Status = "OnDuty";
+
+            // Dispatched cancel counts against safety score
+            trip.Driver.SafetyScore = trip.Driver.TripCount > 0
+                ? Math.Round((double)trip.Driver.CompletedTrips / trip.Driver.TripCount * 100, 1)
+                : 100;
         }
 
         trip.Status = "Cancelled";
         await _db.SaveChangesAsync();
+        await Audit("Cancelled", "Trip", trip.Id, $"Cancelled trip #{trip.Id}");
         return Ok(new TripDto(trip.Id, trip.VehicleId, trip.Vehicle!.Name, trip.Vehicle.LicensePlate,
             trip.DriverId, trip.Driver!.FullName, trip.Origin, trip.Destination,
             trip.CargoWeight, trip.CargoDescription, trip.Status, trip.StartOdometer, trip.EndOdometer,

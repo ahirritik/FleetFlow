@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
-import { Download } from 'lucide-react';
+import { Download, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const COLORS = ['#3b82f6', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
@@ -30,8 +30,17 @@ export default function Analytics() {
             const res = await api.get('/analytics/export/csv', { responseType: 'blob' });
             const url = window.URL.createObjectURL(new Blob([res.data]));
             const a = document.createElement('a'); a.href = url; a.download = 'fleet_report.csv'; a.click();
-            toast.success('Report downloaded');
+            toast.success('CSV report downloaded');
         } catch (err) { toast.error('Export failed'); }
+    };
+
+    const exportPdf = async () => {
+        try {
+            const res = await api.get('/analytics/export/pdf', { responseType: 'blob' });
+            const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+            const a = document.createElement('a'); a.href = url; a.download = 'fleet_report.pdf'; a.click();
+            toast.success('PDF report downloaded');
+        } catch (err) { toast.error('PDF export failed'); }
     };
 
     if (loading) return <div className="loading-spinner"><div className="spinner"></div></div>;
@@ -43,7 +52,10 @@ export default function Analytics() {
         <div className="page-content">
             <div className="page-header">
                 <div><h2>Analytics & Reports</h2><p>Data-driven fleet insights</p></div>
-                <button className="btn btn-primary" onClick={exportCsv}><Download size={18} /> Export CSV</button>
+                <div className="action-buttons">
+                    <button className="btn btn-secondary" onClick={exportCsv}><Download size={18} /> Export CSV</button>
+                    <button className="btn btn-primary" onClick={exportPdf}><FileText size={18} /> Export PDF</button>
+                </div>
             </div>
 
             <div className="charts-grid">
@@ -80,7 +92,7 @@ export default function Analytics() {
                 <div className="table-container">
                     <table className="data-table">
                         <thead>
-                            <tr><th>Vehicle</th><th>Plate</th><th>Fuel Cost</th><th>Maint. Cost</th><th>Total Cost</th><th>Odometer</th><th>Cost/km</th><th>ROI %</th></tr>
+                            <tr><th>Vehicle</th><th>Plate</th><th>Fuel Cost</th><th>Maint. Cost</th><th>Total Cost</th><th>Odometer</th><th>Cost/km</th><th>Fuel Eff.</th><th>ROI %</th></tr>
                         </thead>
                         <tbody>
                             {costs.map(c => (
@@ -92,6 +104,7 @@ export default function Analytics() {
                                     <td className="font-medium">${c.totalCost.toLocaleString()}</td>
                                     <td>{c.odometer.toLocaleString()} km</td>
                                     <td>${c.costPerKm}</td>
+                                    <td>{c.fuelEfficiency > 0 ? `${c.fuelEfficiency} km/L` : <span className="text-muted">N/A</span>}</td>
                                     <td><span className={`status-pill ${c.roi >= 0 ? 'status-completed' : 'status-cancelled'}`}>{c.roi}%</span></td>
                                 </tr>
                             ))}
