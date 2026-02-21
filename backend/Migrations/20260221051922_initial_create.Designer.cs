@@ -4,6 +4,7 @@ using FleetFlow.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FleetFlow.API.Migrations
 {
     [DbContext(typeof(FleetFlowDbContext))]
-    partial class FleetFlowDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260221051922_initial_create")]
+    partial class initial_create
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -306,7 +309,7 @@ namespace FleetFlow.API.Migrations
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "admin@fleet.com",
                             FullName = "Admin Manager",
-                            PasswordHash = "$2a$11$dQVUP4Coir8l9TXGgSwtQ./9yXXMkDW9WquzWfeWD1BlAKmsLOteW",
+                            PasswordHash = "$2a$11$bXz48Y.u5A5PgtJCptlDx.awkGP.sTmGArMpQ/hj0LK4ycs/jjNEC",
                             Role = "Manager"
                         },
                         new
@@ -315,26 +318,8 @@ namespace FleetFlow.API.Migrations
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "dispatcher@fleet.com",
                             FullName = "Sarah Dispatcher",
-                            PasswordHash = "$2a$11$H3KVrzeNByOLHO9LqQgWIOV02BHDcI0rQpFwybAVPidzT5TUlCliu",
+                            PasswordHash = "$2a$11$RgrklAGuQpp6lxAJZ46aTeibme6DKxRg96R6RS4OBBHdDyUJ6vCo.",
                             Role = "Dispatcher"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Email = "safety@fleet.com",
-                            FullName = "Officer Mike",
-                            PasswordHash = "$2a$11$Ad6opLafNEgb8lzilm7uOepYuYaCYsy8SkXntnMnBxkDST7seZcEm",
-                            Role = "SafetyOfficer"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Email = "analyst@fleet.com",
-                            FullName = "Emma Analyst",
-                            PasswordHash = "$2a$11$mzKk8e2gcciW0YWpnCkAAuI0eQkoj.5P4MLB63Bs/ZaOg7QddIrF.",
-                            Role = "Analyst"
                         });
                 });
 

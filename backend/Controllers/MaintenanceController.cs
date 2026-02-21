@@ -29,6 +29,7 @@ public class MaintenanceController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Manager")]
     public async Task<IActionResult> Create([FromBody] MaintenanceCreateDto dto)
     {
         var vehicle = await _db.Vehicles.FindAsync(dto.VehicleId);
@@ -50,6 +51,7 @@ public class MaintenanceController : ControllerBase
     }
 
     [HttpPatch("{id}/complete")]
+    [Authorize(Roles = "Manager")]
     public async Task<IActionResult> Complete(int id)
     {
         var log = await _db.MaintenanceLogs.Include(m => m.Vehicle).FirstOrDefaultAsync(m => m.Id == id);
@@ -70,6 +72,7 @@ public class MaintenanceController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Manager")]
     public async Task<IActionResult> Delete(int id)
     {
         var log = await _db.MaintenanceLogs.FindAsync(id);

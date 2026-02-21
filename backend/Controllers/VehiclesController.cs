@@ -41,6 +41,7 @@ public class VehiclesController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Manager")]
     public async Task<IActionResult> Create([FromBody] VehicleCreateDto dto)
     {
         if (await _db.Vehicles.AnyAsync(v => v.LicensePlate == dto.LicensePlate))
@@ -61,6 +62,7 @@ public class VehiclesController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Roles = "Manager")]
     public async Task<IActionResult> Update(int id, [FromBody] VehicleUpdateDto dto)
     {
         var v = await _db.Vehicles.FindAsync(id);
@@ -78,6 +80,7 @@ public class VehiclesController : ControllerBase
     }
 
     [HttpPatch("{id}/status")]
+    [Authorize(Roles = "Manager")]
     public async Task<IActionResult> UpdateStatus(int id, [FromBody] StatusUpdateRequest req)
     {
         var v = await _db.Vehicles.FindAsync(id);
@@ -94,6 +97,7 @@ public class VehiclesController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Manager")]
     public async Task<IActionResult> Delete(int id)
     {
         var v = await _db.Vehicles.FindAsync(id);

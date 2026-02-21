@@ -30,6 +30,7 @@ public class ExpensesController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Manager,Dispatcher")]
     public async Task<IActionResult> Create([FromBody] ExpenseCreateDto dto)
     {
         var vehicle = await _db.Vehicles.FindAsync(dto.VehicleId);
@@ -54,6 +55,7 @@ public class ExpensesController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Manager,Dispatcher")]
     public async Task<IActionResult> Delete(int id)
     {
         var e = await _db.Expenses.FindAsync(id);

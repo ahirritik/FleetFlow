@@ -6,13 +6,13 @@ import {
 import { useState } from 'react';
 
 const navItems = [
-    { to: '/', label: 'Dashboard', icon: LayoutDashboard },
-    { to: '/vehicles', label: 'Vehicles', icon: Truck },
-    { to: '/trips', label: 'Trips', icon: Route },
-    { to: '/maintenance', label: 'Maintenance', icon: Wrench },
-    { to: '/expenses', label: 'Expenses', icon: Receipt },
-    { to: '/drivers', label: 'Drivers', icon: Users },
-    { to: '/analytics', label: 'Analytics', icon: BarChart3 },
+    { to: '/', label: 'Dashboard', icon: LayoutDashboard, allowedRoles: ['Manager', 'Dispatcher', 'SafetyOfficer', 'Analyst'] },
+    { to: '/vehicles', label: 'Vehicles', icon: Truck, allowedRoles: ['Manager', 'Dispatcher', 'SafetyOfficer', 'Analyst'] },
+    { to: '/trips', label: 'Trips', icon: Route, allowedRoles: ['Manager', 'Dispatcher'] },
+    { to: '/maintenance', label: 'Maintenance', icon: Wrench, allowedRoles: ['Manager'] },
+    { to: '/expenses', label: 'Expenses', icon: Receipt, allowedRoles: ['Manager', 'Dispatcher'] },
+    { to: '/drivers', label: 'Drivers', icon: Users, allowedRoles: ['Manager', 'SafetyOfficer'] },
+    { to: '/analytics', label: 'Analytics', icon: BarChart3, allowedRoles: ['Manager', 'Analyst'] },
 ];
 
 export default function Layout() {
@@ -39,18 +39,20 @@ export default function Layout() {
                 </div>
 
                 <nav className="sidebar-nav">
-                    {navItems.map(({ to, label, icon: Icon }) => (
-                        <NavLink
-                            key={to}
-                            to={to}
-                            end={to === '/'}
-                            className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-                            onClick={() => setSidebarOpen(false)}
-                        >
-                            <Icon size={20} />
-                            <span>{label}</span>
-                        </NavLink>
-                    ))}
+                    {navItems
+                        .filter(({ allowedRoles }) => allowedRoles.includes(user?.role))
+                        .map(({ to, label, icon: Icon }) => (
+                            <NavLink
+                                key={to}
+                                to={to}
+                                end={to === '/'}
+                                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                                onClick={() => setSidebarOpen(false)}
+                            >
+                                <Icon size={20} />
+                                <span>{label}</span>
+                            </NavLink>
+                        ))}
                 </nav>
 
                 <div className="sidebar-footer">

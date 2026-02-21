@@ -63,7 +63,9 @@ public class FleetFlowDbContext : DbContext
         // Seed Data
         modelBuilder.Entity<User>().HasData(
             new User { Id = 1, FullName = "Admin Manager", Email = "admin@fleet.com", PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!"), Role = "Manager", CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
-            new User { Id = 2, FullName = "Sarah Dispatcher", Email = "dispatcher@fleet.com", PasswordHash = BCrypt.Net.BCrypt.HashPassword("Dispatch123!"), Role = "Dispatcher", CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc) }
+            new User { Id = 2, FullName = "Sarah Dispatcher", Email = "dispatcher@fleet.com", PasswordHash = BCrypt.Net.BCrypt.HashPassword("Dispatch123!"), Role = "Dispatcher", CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+            new User { Id = 3, FullName = "Officer Mike", Email = "safety@fleet.com", PasswordHash = BCrypt.Net.BCrypt.HashPassword("Safety123!"), Role = "SafetyOfficer", CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+            new User { Id = 4, FullName = "Emma Analyst", Email = "analyst@fleet.com", PasswordHash = BCrypt.Net.BCrypt.HashPassword("Analyst123!"), Role = "Analyst", CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc) }
         );
 
         modelBuilder.Entity<Vehicle>().HasData(

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import { Plus, Pencil, Trash2, X } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export default function VehicleRegistry() {
     const [vehicles, setVehicles] = useState([]);
@@ -9,6 +10,8 @@ export default function VehicleRegistry() {
     const [showModal, setShowModal] = useState(false);
     const [editing, setEditing] = useState(null);
     const [filters, setFilters] = useState({ type: '', status: '' });
+    const { user } = useAuth();
+    const canWrite = user?.role === 'Manager';
     const [form, setForm] = useState({
         name: '', model: '', licensePlate: '', type: 'Truck',
         maxCapacity: '', odometer: '', region: '', acquisitionCost: ''
@@ -82,7 +85,7 @@ export default function VehicleRegistry() {
                     <h2>Vehicle Registry</h2>
                     <p>Manage your fleet assets</p>
                 </div>
-                <button className="btn btn-primary" onClick={openCreate}><Plus size={18} /> Add Vehicle</button>
+                {canWrite && <button className="btn btn-primary" onClick={openCreate}><Plus size={18} /> Add Vehicle</button>}
             </div>
 
             <div className="filters-bar">
@@ -106,7 +109,7 @@ export default function VehicleRegistry() {
                     <thead>
                         <tr>
                             <th>Name</th><th>Model</th><th>Plate</th><th>Type</th>
-                            <th>Capacity</th><th>Odometer</th><th>Region</th><th>Status</th><th>Actions</th>
+                            <th>Capacity</th><th>Odometer</th><th>Region</th><th>Status</th>{canWrite && <th>Actions</th>}
                         </tr>
                     </thead>
                     <tbody>
@@ -122,24 +125,30 @@ export default function VehicleRegistry() {
                                 <td>{v.odometer.toLocaleString()} km</td>
                                 <td>{v.region}</td>
                                 <td>
-                                    <select
-                                        className={`status-select ${getStatusClass(v.status)}`}
-                                        value={v.status}
-                                        onChange={(e) => handleStatusChange(v.id, e.target.value)}
-                                        disabled={v.status === 'OnTrip'}
-                                    >
-                                        <option value="Available">Available</option>
-                                        <option value="InShop">In Shop</option>
-                                        <option value="Retired">Retired</option>
-                                        {v.status === 'OnTrip' && <option value="OnTrip">On Trip</option>}
-                                    </select>
+                                    {canWrite ? (
+                                        <select
+                                            className={`status-select ${getStatusClass(v.status)}`}
+                                            value={v.status}
+                                            onChange={(e) => handleStatusChange(v.id, e.target.value)}
+                                            disabled={v.status === 'OnTrip'}
+                                        >
+                                            <option value="Available">Available</option>
+                                            <option value="InShop">In Shop</option>
+                                            <option value="Retired">Retired</option>
+                                            {v.status === 'OnTrip' && <option value="OnTrip">On Trip</option>}
+                                        </select>
+                                    ) : (
+                                        <span className={`status-pill ${getStatusClass(v.status)}`}>{v.status}</span>
+                                    )}
                                 </td>
-                                <td>
-                                    <div className="action-buttons">
-                                        <button className="btn-icon" onClick={() => openEdit(v)} title="Edit"><Pencil size={16} /></button>
-                                        <button className="btn-icon btn-danger" onClick={() => handleDelete(v.id)} title="Delete"><Trash2 size={16} /></button>
-                                    </div>
-                                </td>
+                                {canWrite && (
+                                    <td>
+                                        <div className="action-buttons">
+                                            <button className="btn-icon" onClick={() => openEdit(v)} title="Edit"><Pencil size={16} /></button>
+                                            <button className="btn-icon btn-danger" onClick={() => handleDelete(v.id)} title="Delete"><Trash2 size={16} /></button>
+                                        </div>
+                                    </td>
+                                )}
                             </tr>
                         ))}
                     </tbody>

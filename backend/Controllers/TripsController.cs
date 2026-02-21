@@ -43,6 +43,7 @@ public class TripsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Manager,Dispatcher")]
     public async Task<IActionResult> Create([FromBody] TripCreateDto dto)
     {
         var vehicle = await _db.Vehicles.FindAsync(dto.VehicleId);
@@ -90,6 +91,7 @@ public class TripsController : ControllerBase
     }
 
     [HttpPost("{id}/dispatch")]
+    [Authorize(Roles = "Manager,Dispatcher")]
     public async Task<IActionResult> Dispatch(int id)
     {
         var trip = await _db.Trips.Include(t => t.Vehicle).Include(t => t.Driver).FirstOrDefaultAsync(t => t.Id == id);
@@ -110,6 +112,7 @@ public class TripsController : ControllerBase
     }
 
     [HttpPost("{id}/complete")]
+    [Authorize(Roles = "Manager,Dispatcher")]
     public async Task<IActionResult> Complete(int id, [FromBody] TripCompleteDto dto)
     {
         var trip = await _db.Trips.Include(t => t.Vehicle).Include(t => t.Driver).FirstOrDefaultAsync(t => t.Id == id);
@@ -132,6 +135,7 @@ public class TripsController : ControllerBase
     }
 
     [HttpPost("{id}/cancel")]
+    [Authorize(Roles = "Manager,Dispatcher")]
     public async Task<IActionResult> Cancel(int id)
     {
         var trip = await _db.Trips.Include(t => t.Vehicle).Include(t => t.Driver).FirstOrDefaultAsync(t => t.Id == id);

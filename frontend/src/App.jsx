@@ -17,6 +17,12 @@ function ProtectedRoute({ children }) {
     return user ? children : <Navigate to="/login" />;
 }
 
+function RoleRoute({ children, allowedRoles }) {
+    const { user } = useAuth();
+    if (!user || !allowedRoles.includes(user.role)) return <Navigate to="/" replace />;
+    return children;
+}
+
 function AppRoutes() {
     const { user } = useAuth();
 
@@ -26,11 +32,11 @@ function AppRoutes() {
             <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
                 <Route index element={<Dashboard />} />
                 <Route path="vehicles" element={<VehicleRegistry />} />
-                <Route path="trips" element={<TripDispatcher />} />
-                <Route path="maintenance" element={<MaintenanceLogs />} />
-                <Route path="expenses" element={<ExpenseFuel />} />
-                <Route path="drivers" element={<DriverProfiles />} />
-                <Route path="analytics" element={<Analytics />} />
+                <Route path="trips" element={<RoleRoute allowedRoles={['Manager', 'Dispatcher']}><TripDispatcher /></RoleRoute>} />
+                <Route path="maintenance" element={<RoleRoute allowedRoles={['Manager']}><MaintenanceLogs /></RoleRoute>} />
+                <Route path="expenses" element={<RoleRoute allowedRoles={['Manager', 'Dispatcher']}><ExpenseFuel /></RoleRoute>} />
+                <Route path="drivers" element={<RoleRoute allowedRoles={['Manager', 'SafetyOfficer']}><DriverProfiles /></RoleRoute>} />
+                <Route path="analytics" element={<RoleRoute allowedRoles={['Manager', 'Analyst']}><Analytics /></RoleRoute>} />
             </Route>
         </Routes>
     );

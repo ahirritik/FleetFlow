@@ -84,6 +84,8 @@ export default function LoginPage() {
                     <div className="demo-creds">
                         <span><strong>Manager:</strong> admin@fleet.com / Admin123!</span>
                         <span><strong>Dispatcher:</strong> dispatcher@fleet.com / Dispatch123!</span>
+                        <span><strong>Safety Officer:</strong> safety@fleet.com / Safety123!</span>
+                        <span><strong>Analyst:</strong> analyst@fleet.com / Analyst123!</span>
                     </div>
                 </div>
             </div>

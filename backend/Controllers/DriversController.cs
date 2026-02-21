@@ -40,6 +40,7 @@ public class DriversController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Manager,SafetyOfficer")]
     public async Task<IActionResult> Create([FromBody] DriverCreateDto dto)
     {
         if (await _db.Drivers.AnyAsync(d => d.LicenseNumber == dto.LicenseNumber))
@@ -60,6 +61,7 @@ public class DriversController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Roles = "Manager,SafetyOfficer")]
     public async Task<IActionResult> Update(int id, [FromBody] DriverUpdateDto dto)
     {
         var d = await _db.Drivers.FindAsync(id);
@@ -77,6 +79,7 @@ public class DriversController : ControllerBase
     }
 
     [HttpPatch("{id}/status")]
+    [Authorize(Roles = "Manager,SafetyOfficer")]
     public async Task<IActionResult> UpdateStatus(int id, [FromBody] StatusUpdateRequest req)
     {
         var d = await _db.Drivers.FindAsync(id);
@@ -93,6 +96,7 @@ public class DriversController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Manager,SafetyOfficer")]
     public async Task<IActionResult> Delete(int id)
     {
         var d = await _db.Drivers.FindAsync(id);

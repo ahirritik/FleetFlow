@@ -39,6 +39,7 @@ public class AnalyticsController : ControllerBase
     }
 
     [HttpGet("vehicle-costs")]
+    [Authorize(Roles = "Manager,Analyst")]
     public async Task<IActionResult> GetVehicleCosts()
     {
         var vehicles = await _db.Vehicles.ToListAsync();
@@ -74,6 +75,7 @@ public class AnalyticsController : ControllerBase
     }
 
     [HttpGet("export/csv")]
+    [Authorize(Roles = "Manager,Analyst")]
     public async Task<IActionResult> ExportCsv()
     {
         var vehicles = await _db.Vehicles.ToListAsync();
