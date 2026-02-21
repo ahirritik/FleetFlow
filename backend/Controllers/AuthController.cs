@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using FleetFlow.API.Data;
 using FleetFlow.API.DTOs;
@@ -33,6 +34,14 @@ public class AuthController : ControllerBase
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == req.Email);
         if (user == null || !BCrypt.Net.BCrypt.Verify(req.Password, user.PasswordHash))
             return Unauthorized(new { message = "Invalid email or password." });
+
+        // Invalidate any pending reset token on successful login
+        if (user.ResetToken != null)
+        {
+            user.ResetToken = null;
+            user.ResetTokenExpiry = null;
+            await _db.SaveChangesAsync();
+        }
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -113,6 +122,25 @@ public class AuthController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Generates a cryptographically secure token and returns the raw value.
+    /// Stores a SHA256 hash in the database so tokens are safe even if DB is breached.
+    /// </summary>
+    private static (string rawToken, string hashedToken) GenerateSecureToken()
+    {
+        var bytes = RandomNumberGenerator.GetBytes(32); // 256-bit cryptographic random
+        var rawToken = Convert.ToBase64String(bytes);
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(rawToken));
+        var hashedToken = Convert.ToHexString(hash);
+        return (rawToken, hashedToken);
+    }
+
+    private static string HashToken(string rawToken)
+    {
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(rawToken));
+        return Convert.ToHexString(hash);
+    }
+
     [HttpPost("forgot-password")]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest req)
     {
@@ -123,13 +151,15 @@ public class AuthController : ControllerBase
         if (user == null)
             return Ok(new { message = "If an account with that email exists, a reset token has been generated.", token = (string?)null });
 
-        user.ResetToken = Guid.NewGuid().ToString("N");
+        // Generate a crypto-secure token; store only the hash in DB
+        var (rawToken, hashedToken) = GenerateSecureToken();
+        user.ResetToken = hashedToken;
         user.ResetTokenExpiry = DateTime.UtcNow.AddHours(1);
         await _db.SaveChangesAsync();
 
-        // In production, this token would be sent via email.
+        // In production, rawToken would be sent via email.
         // For demo purposes, we return it directly.
-        return Ok(new { message = "Reset token generated. In production this would be emailed.", token = user.ResetToken });
+        return Ok(new { message = "Reset token generated. In production this would be emailed.", token = rawToken });
     }
 
     [HttpPost("reset-password")]
@@ -141,7 +171,9 @@ public class AuthController : ControllerBase
         if (req.NewPassword.Length < 6)
             return BadRequest(new { message = "Password must be at least 6 characters." });
 
-        var user = await _db.Users.FirstOrDefaultAsync(u => u.ResetToken == req.Token);
+        // Hash the incoming token and compare against the stored hash
+        var tokenHash = HashToken(req.Token);
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.ResetToken == tokenHash);
         if (user == null || user.ResetTokenExpiry == null || user.ResetTokenExpiry < DateTime.UtcNow)
             return BadRequest(new { message = "Invalid or expired reset token." });
 
