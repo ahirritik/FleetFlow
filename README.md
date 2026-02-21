@@ -1,22 +1,29 @@
-# 🚚 FleetFlow: Enterprise Fleet Management System
+FleetFlow: Enterprise Fleet Management System
 
 FleetFlow is a comprehensive, full-stack fleet management solution designed to handle the complexities of logistics operations. It features robust Role-Based Access Control (RBAC), real-time trip dispatching, maintenance scheduling, financial analytics, and driver safety tracking.
 
-![FleetFlow Demo](https://via.placeholder.com/1000x500?text=FleetFlow+Dashboard+Screenshot)
 
-## ✨ Core Features
+<img width="1366" height="693" alt="image" src="https://github.com/user-attachments/assets/6882ec50-5d6b-4f4f-8431-df83f8143883" />
+<img width="1360" height="637" alt="image" src="https://github.com/user-attachments/assets/82631d98-40f9-4bc2-8ad8-00ee22099b4a" />
+<img width="1357" height="624" alt="image" src="https://github.com/user-attachments/assets/60fe3f0c-6cd9-4e56-a2b1-282c86d2e2d0" />
+<img width="1355" height="628" alt="image" src="https://github.com/user-attachments/assets/8ca305b4-509f-45bf-a816-b2c4b0369fa4" />
+<img width="1366" height="646" alt="image" src="https://github.com/user-attachments/assets/9ce7f156-33d3-4d75-a749-494b8e061bb8" />
+<img width="1366" height="638" alt="image" src="https://github.com/user-attachments/assets/39488ff9-26c5-484b-8dad-6aa2d3e173a1" />
+<img width="1366" height="644" alt="image" src="https://github.com/user-attachments/assets/d58cd572-5b24-43b7-865b-5892aa3af8cc" />
 
-*   **🔒 Granular Role-Based Access Control (RBAC):** Four distinct user roles (Manager, Dispatcher, Safety Officer, Analyst) with strictly segregated capabilities enforced at both the UI and API levels.
-*   **📊 Interactive Dashboard:** Real-time KPIs including active fleet size, utilization rates, pending cargo, and total revenue.
-*   **🚛 Vehicle Registry & Lifecycle Management:** Complete CRUD operations for vehicles with status tracking (Available, OnTrip, InShop, Retired).
-*   **🗺️ Trip Dispatching:** End-to-end trip lifecycle management (Draft ➔ Dispatched ➔ Completed ➔ Cancelled) with automatic odometer updates and validation checks.
-*   **🔧 Preventative Maintenance Logs:** Track service history. Scheduling maintenance automatically moves vehicles to "In Shop" to prevent accidental dispatching.
-*   **⛽ Expense & Fuel Tracking:** Detailed ledger for tracking operational costs, automatically rolled up into per-vehicle ROI calculations.
-*   **👨‍✈️ Driver Safety Profiles:** Track driver compliance, license expiry, and auto-derived safety scores based on trip completion rates.
-*   **📈 Financial Analytics & Reporting:** Deep insights with Recharts visualizations, CSV data dumps, and elegantly formatted PDF Executive Reports generated via QuestPDF.
-*   **🕵️‍♂️ Audit Trail:** System-wide transparency logging every critical action (Create, Update, Delete, Status Change) with timestamps and user details.
+Core Features
 
-## 🛠️ Technology Stack
+*   Granular Role-Based Access Control (RBAC):** Four distinct user roles (Manager, Dispatcher, Safety Officer, Analyst) with strictly segregated capabilities enforced at both the UI and API levels.
+*   Interactive Dashboard:** Real-time KPIs including active fleet size, utilization rates, pending cargo, and total revenue.
+*    Vehicle Registry & Lifecycle Management:** Complete CRUD operations for vehicles with status tracking (Available, OnTrip, InShop, Retired).
+*    Trip Dispatching:** End-to-end trip lifecycle management (Draft ➔ Dispatched ➔ Completed ➔ Cancelled) with automatic odometer updates and validation checks.
+*    Preventative Maintenance Logs:** Track service history. Scheduling maintenance automatically moves vehicles to "In Shop" to prevent accidental dispatching.
+*    Expense & Fuel Tracking:** Detailed ledger for tracking operational costs, automatically rolled up into per-vehicle ROI calculations.
+*    Driver Safety Profiles:** Track driver compliance, license expiry, and auto-derived safety scores based on trip completion rates.
+*    Financial Analytics & Reporting:** Deep insights with Recharts visualizations, CSV data dumps, and elegantly formatted PDF Executive Reports generated via QuestPDF.
+*    Audit Trail:** System-wide transparency logging every critical action (Create, Update, Delete, Status Change) with timestamps and user details.
+
+##  Technology Stack
 
 ### Frontend
 *   **Framework:** React 19 (via Vite)
@@ -32,7 +39,7 @@ FleetFlow is a comprehensive, full-stack fleet management solution designed to h
 *   **Document Generation:** QuestPDF (for premium PDF analytics reports)
 *   **Architecture:** Clean RESTful API design with separation of Controllers, Models, and DTOs.
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 *   [.NET 10.0 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
@@ -82,7 +89,7 @@ FleetFlow is a comprehensive, full-stack fleet management solution designed to h
    ```
    *The frontend will start on the port specified by Vite (usually `http://localhost:5173`).*
 
-## ⚠️ Troubleshooting
+##  Troubleshooting
 
 **Build Error: `MSB3021` / `MSB3027` (The file is locked by: 'FleetFlow.API')**
 If you encounter this error when running `dotnet run` or `dotnet build`, it means a previous instance of the backend server is still running in the background and locking the `.exe` or `.dll` files.
@@ -90,7 +97,7 @@ To resolve this, forcefully close the running process:
 *   **Windows (PowerShell):** `Stop-Process -Name "FleetFlow.API" -Force -ErrorAction SilentlyContinue`
 *   **Mac/Linux:** `pkill -f FleetFlow.API`
 
-## 🔑 Default Seed Credentials
+##  Default Seed Credentials
 
 Upon your first database migration, the following mock users are generated so you can explore the RBAC features:
 
@@ -101,7 +108,7 @@ Upon your first database migration, the following mock users are generated so yo
 | **Safety Officer** | `safety@fleet.com` | `Safety123!` | Full control over Driver Profiles. Read-only access to Vehicles. |
 | **Analyst** | `analyst@fleet.com` | `Analyst123!` | Read operations and full access to Analytics/PDF Exports. |
 
-## 📁 Project Structure
+##  Project Structure
 
 ```text
 FleetFlow/
@@ -125,10 +132,8 @@ FleetFlow/
     └── package.json          # Frontend dependencies
 ```
 
-## 🤝 Contributing
+##  Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📄 License
 
 This project is licensed under the MIT License.
