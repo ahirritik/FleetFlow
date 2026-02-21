@@ -186,7 +186,7 @@ export default function VehicleRegistry() {
                                 </div>
                                 <div className="form-group">
                                     <label>Max Capacity (kg)</label>
-                                    <input required type="number" min="0" value={form.maxCapacity} onChange={(e) => setForm(f => ({ ...f, maxCapacity: e.target.value }))} />
+                                    <input required type="number" min="1" value={form.maxCapacity} onChange={(e) => setForm(f => ({ ...f, maxCapacity: e.target.value }))} />
                                 </div>
                                 {!editing && (
                                     <div className="form-group">
@@ -199,8 +199,8 @@ export default function VehicleRegistry() {
                                     <input value={form.region} onChange={(e) => setForm(f => ({ ...f, region: e.target.value }))} placeholder="e.g. North" />
                                 </div>
                                 <div className="form-group">
-                                    <label>Acquisition Cost ($)</label>
-                                    <input type="number" min="0" value={form.acquisitionCost} onChange={(e) => setForm(f => ({ ...f, acquisitionCost: e.target.value }))} />
+                                    <label>Acquisition Cost (₹)</label>
+                                    <input type="number" min="0" step="0.01" value={form.acquisitionCost} onChange={(e) => setForm(f => ({ ...f, acquisitionCost: e.target.value }))} />
                                 </div>
                             </div>
                             <div className="modal-footer">

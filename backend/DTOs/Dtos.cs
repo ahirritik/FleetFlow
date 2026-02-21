@@ -7,6 +7,7 @@ public record LoginResponse(string Token, string FullName, string Role);
 // ── User Management ──
 public record UserDto(int Id, string FullName, string Email, string Role, DateTime CreatedAt);
 public record UserCreateDto(string FullName, string Email, string Password, string Role);
+public record UserUpdateDto(string FullName, string Email, string Role);
 public record ForgotPasswordRequest(string Email);
 public record ResetPasswordRequest(string Token, string NewPassword);
 

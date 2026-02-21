@@ -68,7 +68,31 @@ public class ExpensesController : ControllerBase
 
         _db.Expenses.Add(expense);
         await _db.SaveChangesAsync();
-        await Audit("Created", "Expense", expense.Id, $"Logged {expense.Category} expense of ${expense.Cost} for vehicle {vehicle.Name}");
+        await Audit("Created", "Expense", expense.Id, $"Logged {expense.Category} expense of ₹{expense.Cost} for vehicle {vehicle.Name}");
+        return Ok(new ExpenseDto(expense.Id, expense.VehicleId, vehicle.Name, expense.TripId, expense.Category,
+            expense.Liters, expense.Cost, expense.Date, expense.Notes));
+    }
+
+    [HttpPut("{id}")]
+    [Authorize(Roles = "Manager")]
+    public async Task<IActionResult> Update(int id, [FromBody] ExpenseCreateDto dto)
+    {
+        var expense = await _db.Expenses.FindAsync(id);
+        if (expense == null) return NotFound();
+
+        var vehicle = await _db.Vehicles.FindAsync(dto.VehicleId);
+        if (vehicle == null) return BadRequest(new { message = "Vehicle not found." });
+
+        expense.VehicleId = dto.VehicleId;
+        expense.TripId = dto.TripId;
+        expense.Category = dto.Category;
+        expense.Liters = dto.Liters;
+        expense.Cost = dto.Cost;
+        expense.Date = dto.Date;
+        expense.Notes = dto.Notes;
+
+        await _db.SaveChangesAsync();
+        await Audit("Updated", "Expense", id, $"Updated expense #{id} to ₹{expense.Cost} for vehicle {vehicle.Name}");
         return Ok(new ExpenseDto(expense.Id, expense.VehicleId, vehicle.Name, expense.TripId, expense.Category,
             expense.Liters, expense.Cost, expense.Date, expense.Notes));
     }

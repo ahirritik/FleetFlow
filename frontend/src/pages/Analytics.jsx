@@ -66,7 +66,7 @@ export default function Analytics() {
                             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                             <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                             <YAxis tick={{ fontSize: 12 }} />
-                            <Tooltip formatter={(v) => `$${v.toLocaleString()}`} />
+                            <Tooltip formatter={(v) => `₹${v.toLocaleString()}`} />
                             <Legend />
                             <Bar dataKey="Fuel" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                             <Bar dataKey="Maintenance" fill="#f59e0b" radius={[4, 4, 0, 0]} />
@@ -81,7 +81,7 @@ export default function Analytics() {
                             <Pie data={pieData} cx="50%" cy="50%" outerRadius={100} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
                                 {pieData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                             </Pie>
-                            <Tooltip formatter={(v) => `$${v.toLocaleString()}`} />
+                            <Tooltip formatter={(v) => `₹${v.toLocaleString()}`} />
                         </PieChart>
                     </ResponsiveContainer>
                 </div>
@@ -92,18 +92,18 @@ export default function Analytics() {
                 <div className="table-container">
                     <table className="data-table">
                         <thead>
-                            <tr><th>Vehicle</th><th>Plate</th><th>Fuel Cost</th><th>Maint. Cost</th><th>Total Cost</th><th>Odometer</th><th>Cost/km</th><th>Fuel Eff.</th><th>ROI %</th></tr>
+                            <tr><th>Vehicle</th><th>Plate</th><th>Fuel Cost</th><th>Maint. Cost</th><th>Total Cost</th><th>Odometer</th><th>₹/km</th><th>Fuel Eff.</th><th>ROI %</th></tr>
                         </thead>
                         <tbody>
                             {costs.map(c => (
                                 <tr key={c.vehicleId}>
                                     <td className="font-medium">{c.vehicleName}</td>
                                     <td><code>{c.licensePlate}</code></td>
-                                    <td>${c.fuelCost.toLocaleString()}</td>
-                                    <td>${c.maintenanceCost.toLocaleString()}</td>
-                                    <td className="font-medium">${c.totalCost.toLocaleString()}</td>
+                                    <td>₹{c.fuelCost.toLocaleString()}</td>
+                                    <td>₹{c.maintenanceCost.toLocaleString()}</td>
+                                    <td className="font-medium">₹{c.totalCost.toLocaleString()}</td>
                                     <td>{c.odometer.toLocaleString()} km</td>
-                                    <td>${c.costPerKm}</td>
+                                    <td>₹{c.costPerKm}</td>
                                     <td>{c.fuelEfficiency > 0 ? `${c.fuelEfficiency} km/L` : <span className="text-muted">N/A</span>}</td>
                                     <td><span className={`status-pill ${c.roi >= 0 ? 'status-completed' : 'status-cancelled'}`}>{c.roi}%</span></td>
                                 </tr>

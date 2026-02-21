@@ -106,6 +106,23 @@ public class AuthController : ControllerBase
         return Ok(new UserDto(user.Id, user.FullName, user.Email, user.Role, user.CreatedAt));
     }
 
+    [HttpPut("users/{id}")]
+    [Authorize(Roles = "Manager")]
+    public async Task<IActionResult> UpdateUser(int id, [FromBody] UserUpdateDto dto)
+    {
+        var user = await _db.Users.FindAsync(id);
+        if (user == null) return NotFound();
+
+        if (user.Email != dto.Email && await _db.Users.AnyAsync(u => u.Email == dto.Email && u.Id != id))
+            return BadRequest(new { message = "Email already in use." });
+
+        user.FullName = dto.FullName;
+        user.Email = dto.Email;
+        user.Role = dto.Role;
+        await _db.SaveChangesAsync();
+        return Ok(new UserDto(user.Id, user.FullName, user.Email, user.Role, user.CreatedAt));
+    }
+
     [HttpDelete("users/{id}")]
     [Authorize(Roles = "Manager")]
     public async Task<IActionResult> DeleteUser(int id)

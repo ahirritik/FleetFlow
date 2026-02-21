@@ -104,13 +104,13 @@ export default function DriverProfiles() {
                             <div className="form-grid">
                                 <div className="form-group"><label>Full Name</label><input required value={form.fullName} onChange={(e) => setForm(f => ({ ...f, fullName: e.target.value }))} /></div>
                                 <div className="form-group"><label>License Number</label><input required value={form.licenseNumber} onChange={(e) => setForm(f => ({ ...f, licenseNumber: e.target.value }))} /></div>
-                                <div className="form-group"><label>License Expiry</label><input required type="date" value={form.licenseExpiry} onChange={(e) => setForm(f => ({ ...f, licenseExpiry: e.target.value }))} /></div>
+                                <div className="form-group"><label>License Expiry</label><input required type="date" min={new Date().toISOString().split('T')[0]} value={form.licenseExpiry} onChange={(e) => setForm(f => ({ ...f, licenseExpiry: e.target.value }))} /></div>
                                 <div className="form-group"><label>License Category</label>
                                     <select value={form.licenseCategory} onChange={(e) => setForm(f => ({ ...f, licenseCategory: e.target.value }))}>
                                         <option value="Truck">Truck</option><option value="Van">Van</option><option value="Bike">Bike</option>
                                     </select>
                                 </div>
-                                <div className="form-group"><label>Phone</label><input value={form.phone} onChange={(e) => setForm(f => ({ ...f, phone: e.target.value }))} /></div>
+                                <div className="form-group"><label>Phone</label><input required value={form.phone} onChange={(e) => setForm(f => ({ ...f, phone: e.target.value }))} pattern="[0-9]{10}" title="Enter a 10-digit phone number" placeholder="e.g. 9876543210" /></div>
                             </div>
                             <div className="modal-footer"><button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>Cancel</button><button type="submit" className="btn btn-primary">{editing ? 'Update' : 'Add Driver'}</button></div>
                         </form>

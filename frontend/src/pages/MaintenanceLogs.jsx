@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { Plus, CheckCircle, X } from 'lucide-react';
+import { Plus, CheckCircle, X, Pencil } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export default function MaintenanceLogs() {
+    const { user } = useAuth();
+    const canWrite = user?.role === 'Manager';
     const [logs, setLogs] = useState([]);
     const [vehicles, setVehicles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
+    const [editing, setEditing] = useState(null);
     const [vehicleFilter, setVehicleFilter] = useState('');
     const [form, setForm] = useState({ vehicleId: '', serviceType: '', description: '', cost: '', date: '' });
 
@@ -26,12 +30,20 @@ export default function MaintenanceLogs() {
         finally { setLoading(false); }
     };
 
-    const handleCreate = async (e) => {
+    const openCreate = () => { setEditing(null); setForm({ vehicleId: '', serviceType: '', description: '', cost: '', date: '' }); setShowModal(true); };
+    const openEdit = (m) => {
+        setEditing(m.id);
+        setForm({ vehicleId: String(m.vehicleId), serviceType: m.serviceType, description: m.description, cost: String(m.cost), date: m.date.split('T')[0] });
+        setShowModal(true);
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        const payload = { vehicleId: +form.vehicleId, serviceType: form.serviceType, description: form.description, cost: +form.cost, date: form.date };
         try {
-            await api.post('/maintenance', { ...form, vehicleId: +form.vehicleId, cost: +form.cost });
-            toast.success('Maintenance logged — vehicle moved to In Shop');
-            setShowModal(false);
+            if (editing) { await api.put(`/maintenance/${editing}`, payload); toast.success('Maintenance updated'); }
+            else { await api.post('/maintenance', payload); toast.success('Maintenance logged — vehicle moved to In Shop'); }
+            setShowModal(false); setEditing(null);
             setForm({ vehicleId: '', serviceType: '', description: '', cost: '', date: '' });
             loadData();
         } catch (err) { toast.error(err.response?.data?.message || 'Error'); }
@@ -51,7 +63,7 @@ export default function MaintenanceLogs() {
                     <h2>Maintenance & Service Logs</h2>
                     <p>Track vehicle health and preventative maintenance</p>
                 </div>
-                <button className="btn btn-primary" onClick={() => setShowModal(true)}><Plus size={18} /> Log Maintenance</button>
+                {canWrite && <button className="btn btn-primary" onClick={openCreate}><Plus size={18} /> Log Maintenance</button>}
             </div>
 
             <div className="filters-bar">
@@ -66,7 +78,7 @@ export default function MaintenanceLogs() {
                     <thead>
                         <tr>
                             <th>Vehicle</th><th>Service Type</th><th>Description</th>
-                            <th>Cost</th><th>Date</th><th>Status</th><th>Actions</th>
+                            <th>Cost</th><th>Date</th><th>Status</th>{canWrite && <th>Actions</th>}
                         </tr>
                     </thead>
                     <tbody>
@@ -77,20 +89,23 @@ export default function MaintenanceLogs() {
                                 <td>{m.vehicleName}</td>
                                 <td className="font-medium">{m.serviceType}</td>
                                 <td>{m.description}</td>
-                                <td>${m.cost.toLocaleString()}</td>
+                                <td>₹{m.cost.toLocaleString()}</td>
                                 <td>{new Date(m.date).toLocaleDateString()}</td>
                                 <td>
                                     <span className={`status-pill ${m.isCompleted ? 'status-completed' : 'status-amber'}`}>
                                         {m.isCompleted ? 'Completed' : 'In Progress'}
                                     </span>
                                 </td>
-                                <td>
-                                    {!m.isCompleted && (
-                                        <button className="btn-sm btn-success" onClick={() => handleComplete(m.id)}>
-                                            <CheckCircle size={14} /> Mark Done
-                                        </button>
-                                    )}
-                                </td>
+                                {canWrite && <td>
+                                    <div className="action-buttons">
+                                        {!m.isCompleted && <button className="btn-icon" onClick={() => openEdit(m)} title="Edit"><Pencil size={16} /></button>}
+                                        {!m.isCompleted && (
+                                            <button className="btn-sm btn-success" onClick={() => handleComplete(m.id)}>
+                                                <CheckCircle size={14} /> Mark Done
+                                            </button>
+                                        )}
+                                    </div>
+                                </td>}
                             </tr>
                         ))}
                     </tbody>
@@ -101,10 +116,10 @@ export default function MaintenanceLogs() {
                 <div className="modal-overlay" onClick={() => setShowModal(false)}>
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h3>Log Maintenance</h3>
+                            <h3>{editing ? 'Edit Maintenance' : 'Log Maintenance'}</h3>
                             <button className="btn-icon" onClick={() => setShowModal(false)}><X size={20} /></button>
                         </div>
-                        <form onSubmit={handleCreate} className="modal-body">
+                        <form onSubmit={handleSubmit} className="modal-body">
                             <div className="form-grid">
                                 <div className="form-group">
                                     <label>Vehicle</label>
@@ -133,17 +148,17 @@ export default function MaintenanceLogs() {
                                     <input value={form.description} onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Details..." />
                                 </div>
                                 <div className="form-group">
-                                    <label>Cost ($)</label>
-                                    <input required type="number" min="0" value={form.cost} onChange={(e) => setForm(f => ({ ...f, cost: e.target.value }))} />
+                                    <label>Cost (₹)</label>
+                                    <input required type="number" min="1" step="0.01" value={form.cost} onChange={(e) => setForm(f => ({ ...f, cost: e.target.value }))} />
                                 </div>
                                 <div className="form-group">
                                     <label>Date</label>
-                                    <input required type="date" value={form.date} onChange={(e) => setForm(f => ({ ...f, date: e.target.value }))} />
+                                    <input required type="date" max={new Date().toISOString().split('T')[0]} value={form.date} onChange={(e) => setForm(f => ({ ...f, date: e.target.value }))} />
                                 </div>
                             </div>
                             <div className="modal-footer">
                                 <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>Cancel</button>
-                                <button type="submit" className="btn btn-primary">Log Maintenance</button>
+                                <button type="submit" className="btn btn-primary">{editing ? 'Update' : 'Log Maintenance'}</button>
                             </div>
                         </form>
                     </div>

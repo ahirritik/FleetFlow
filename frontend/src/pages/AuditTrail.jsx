@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api';
-import { History, Search, Filter, ChevronLeft, ChevronRight, User, Database, Activity } from 'lucide-react';
+import { History, Filter, ChevronLeft, ChevronRight, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function AuditTrail() {
@@ -35,11 +35,11 @@ export default function AuditTrail() {
 
     const getActionClass = (action) => {
         switch (action) {
-            case 'Created': return 'text-green-500';
-            case 'Deleted': return 'text-red-500';
-            case 'Updated': return 'text-blue-500';
-            case 'StatusChanged': return 'text-amber-500';
-            default: return 'text-muted';
+            case 'Created': return 'log-created';
+            case 'Deleted': return 'log-deleted';
+            case 'Updated': return 'log-updated';
+            case 'StatusChanged': return 'log-status';
+            default: return 'log-default';
         }
     };
 
@@ -55,12 +55,12 @@ export default function AuditTrail() {
                     <p>System-wide activity log and transparency</p>
                 </div>
                 <div className="filters-bar">
-                    <div className="search-box">
-                        <Filter size={18} />
+                    <div className="filter-group" style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--bg-white)', padding: '6px 14px', borderRadius: '8px', border: '1px solid var(--border-light)' }}>
+                        <Filter size={16} color="var(--text-muted)" />
                         <select
                             value={entityType}
                             onChange={(e) => { setEntityType(e.target.value); setPage(1); }}
-                            className="bg-transparent border-none outline-none text-sm ml-2"
+                            style={{ border: 'none', background: 'transparent', outline: 'none', color: 'var(--text-dark)', fontSize: '13px', cursor: 'pointer' }}
                         >
                             <option value="">All Entities</option>
                             <option value="Vehicle">Vehicles</option>
@@ -68,6 +68,7 @@ export default function AuditTrail() {
                             <option value="Trip">Trips</option>
                             <option value="MaintenanceLog">Maintenance</option>
                             <option value="Expense">Expenses</option>
+                            <option value="User">Users</option>
                         </select>
                     </div>
                 </div>
@@ -76,7 +77,7 @@ export default function AuditTrail() {
             <div className="audit-timeline">
                 {logs.length === 0 ? (
                     <div className="empty-state">
-                        <History size={48} className="text-muted mb-4 opacity-20" />
+                        <History size={48} style={{ opacity: 0.2, margin: '0 auto 16px', color: 'var(--text-muted)' }} />
                         <p>No audit logs found matching your criteria</p>
                     </div>
                 ) : (
@@ -84,23 +85,23 @@ export default function AuditTrail() {
                         {logs.map((log) => (
                             <div key={log.id} className="timeline-item">
                                 <div className="timeline-marker">
-                                    <div className="marker-dot"></div>
+                                    <div className={`marker-dot ${getActionClass(log.action)}`}></div>
                                     <div className="marker-line"></div>
                                 </div>
                                 <div className="timeline-content">
                                     <div className="timeline-header">
-                                        <div className="flex items-center gap-2">
-                                            <span className={`font-bold ${getActionClass(log.action)}`}>{log.action}</span>
-                                            <span className="text-muted">•</span>
-                                            <span className="font-medium">{log.entityType} #{log.entityId}</span>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span className={`log-badge ${getActionClass(log.action)}`}>{log.action}</span>
+                                            <span style={{ color: 'var(--text-muted)' }}>•</span>
+                                            <span style={{ fontWeight: 600, fontSize: '14px' }}>{log.entityType} #{log.entityId}</span>
                                         </div>
                                         <span className="timeline-date">{formatDate(log.timestamp)}</span>
                                     </div>
                                     <p className="timeline-details">{log.details}</p>
                                     <div className="timeline-footer">
-                                        <User size={14} className="text-muted" />
-                                        <span>Performed by: <strong>{log.userName}</strong></span>
-                                        <span className="text-muted ml-2">(ID: {log.userId})</span>
+                                        <User size={14} color="var(--text-muted)" />
+                                        <span>Performed by: <strong style={{ color: 'var(--text-dark)' }}>{log.userName}</strong></span>
+                                        <span style={{ color: 'var(--text-muted)', marginLeft: '8px' }}>(ID: {log.userId})</span>
                                     </div>
                                 </div>
                             </div>
@@ -110,7 +111,7 @@ export default function AuditTrail() {
             </div>
 
             {totalPages > 1 && (
-                <div className="pagination">
+                <div className="pagination" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px', marginTop: '24px' }}>
                     <button
                         className="btn btn-secondary btn-sm"
                         disabled={page === 1}
@@ -118,7 +119,7 @@ export default function AuditTrail() {
                     >
                         <ChevronLeft size={16} /> Previous
                     </button>
-                    <span className="text-sm">Page {page} of {totalPages} ({total} total logs)</span>
+                    <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>Page {page} of {totalPages} ({total} total logs)</span>
                     <button
                         className="btn btn-secondary btn-sm"
                         disabled={page === totalPages}

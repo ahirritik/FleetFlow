@@ -37,8 +37,8 @@ function AppRoutes() {
                 <Route index element={<Dashboard />} />
                 <Route path="vehicles" element={<VehicleRegistry />} />
                 <Route path="trips" element={<RoleRoute allowedRoles={['Manager', 'Dispatcher']}><TripDispatcher /></RoleRoute>} />
-                <Route path="maintenance" element={<RoleRoute allowedRoles={['Manager']}><MaintenanceLogs /></RoleRoute>} />
-                <Route path="expenses" element={<RoleRoute allowedRoles={['Manager', 'Dispatcher']}><ExpenseFuel /></RoleRoute>} />
+                <Route path="maintenance" element={<RoleRoute allowedRoles={['Manager', 'Dispatcher']}><MaintenanceLogs /></RoleRoute>} />
+                <Route path="expenses" element={<RoleRoute allowedRoles={['Manager', 'Dispatcher', 'Analyst']}><ExpenseFuel /></RoleRoute>} />
                 <Route path="drivers" element={<RoleRoute allowedRoles={['Manager', 'SafetyOfficer']}><DriverProfiles /></RoleRoute>} />
                 <Route path="analytics" element={<RoleRoute allowedRoles={['Manager', 'Analyst']}><Analytics /></RoleRoute>} />
                 <Route path="audit" element={<RoleRoute allowedRoles={['Manager']}><AuditTrail /></RoleRoute>} />

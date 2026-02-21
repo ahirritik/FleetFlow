@@ -69,6 +69,24 @@ public class MaintenanceController : ControllerBase
         return Ok(new MaintenanceLogDto(log.Id, log.VehicleId, vehicle.Name, log.ServiceType, log.Description, log.Cost, log.Date, log.IsCompleted));
     }
 
+    [HttpPut("{id}")]
+    [Authorize(Roles = "Manager")]
+    public async Task<IActionResult> Update(int id, [FromBody] MaintenanceCreateDto dto)
+    {
+        var log = await _db.MaintenanceLogs.Include(m => m.Vehicle).FirstOrDefaultAsync(m => m.Id == id);
+        if (log == null) return NotFound();
+        if (log.IsCompleted) return BadRequest(new { message = "Cannot edit a completed maintenance log." });
+
+        log.ServiceType = dto.ServiceType;
+        log.Description = dto.Description;
+        log.Cost = dto.Cost;
+        log.Date = dto.Date;
+
+        await _db.SaveChangesAsync();
+        await Audit("Updated", "MaintenanceLog", id, $"Updated {log.ServiceType} for vehicle {log.Vehicle!.Name}");
+        return Ok(new MaintenanceLogDto(log.Id, log.VehicleId, log.Vehicle.Name, log.ServiceType, log.Description, log.Cost, log.Date, log.IsCompleted));
+    }
+
     [HttpPatch("{id}/complete")]
     [Authorize(Roles = "Manager")]
     public async Task<IActionResult> Complete(int id)

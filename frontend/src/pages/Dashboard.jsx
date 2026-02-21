@@ -11,15 +11,21 @@ export default function Dashboard() {
     const [recentTrips, setRecentTrips] = useState([]);
     const [breakdown, setBreakdown] = useState(null);
     const [region, setRegion] = useState('');
+    const [vehicleType, setVehicleType] = useState('');
+    const [vehicleStatus, setVehicleStatus] = useState('');
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => { loadData(); }, [region]);
+    useEffect(() => { loadData(); }, [region, vehicleType, vehicleStatus]);
 
     const loadData = async () => {
         try {
-            const params = region ? `?region=${region}` : '';
+            const params = new URLSearchParams();
+            if (region) params.append('region', region);
+            if (vehicleType) params.append('type', vehicleType);
+            if (vehicleStatus) params.append('status', vehicleStatus);
+            const qs = params.toString() ? `?${params.toString()}` : '';
             const [dashRes, tripsRes, breakdownRes] = await Promise.all([
-                api.get(`/analytics/dashboard${params}`),
+                api.get(`/analytics/dashboard${qs}`),
                 api.get('/trips'),
                 api.get('/analytics/vehicle-breakdown'),
             ]);
@@ -46,7 +52,7 @@ export default function Dashboard() {
         { label: 'Total Vehicles', value: dashboard?.totalVehicles || 0, icon: Truck },
         { label: 'Total Drivers', value: dashboard?.totalDrivers || 0, icon: Users },
         { label: 'Completed Trips', value: dashboard?.totalTrips || 0, icon: MapPin },
-        { label: 'Total Revenue', value: `$${(dashboard?.totalRevenue || 0).toLocaleString()}`, icon: BarChart3 },
+        { label: 'Total Revenue', value: `₹${(dashboard?.totalRevenue || 0).toLocaleString()}`, icon: BarChart3 },
     ];
 
     const getStatusClass = (status) => {
@@ -62,6 +68,19 @@ export default function Dashboard() {
                     <p>Real-time fleet oversight at a glance</p>
                 </div>
                 <div className="filters-bar">
+                    <select value={vehicleType} onChange={e => setVehicleType(e.target.value)}>
+                        <option value="">All Types</option>
+                        <option value="Truck">Truck</option>
+                        <option value="Van">Van</option>
+                        <option value="Bike">Bike</option>
+                    </select>
+                    <select value={vehicleStatus} onChange={e => setVehicleStatus(e.target.value)}>
+                        <option value="">All Statuses</option>
+                        <option value="Available">Available</option>
+                        <option value="OnTrip">On Trip</option>
+                        <option value="InShop">In Shop</option>
+                        <option value="Retired">Retired</option>
+                    </select>
                     <select value={region} onChange={e => setRegion(e.target.value)}>
                         <option value="">All Regions</option>
                         <option value="North">North</option>

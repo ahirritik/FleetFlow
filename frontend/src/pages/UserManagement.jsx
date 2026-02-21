@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { Plus, Trash2, X, Shield } from 'lucide-react';
+import { Plus, Trash2, X, Shield, Pencil } from 'lucide-react';
 
 export default function UserManagement() {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
+    const [editing, setEditing] = useState(null);
     const [form, setForm] = useState({ fullName: '', email: '', password: '', role: 'Dispatcher' });
 
     useEffect(() => { loadUsers(); }, []);
@@ -19,15 +20,33 @@ export default function UserManagement() {
         finally { setLoading(false); }
     };
 
-    const handleCreate = async (e) => {
+    const openCreate = () => {
+        setEditing(null);
+        setForm({ fullName: '', email: '', password: '', role: 'Dispatcher' });
+        setShowModal(true);
+    };
+
+    const openEdit = (u) => {
+        setEditing(u.id);
+        setForm({ fullName: u.fullName, email: u.email, password: '', role: u.role });
+        setShowModal(true);
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await api.post('/auth/register', form);
-            toast.success('User created successfully');
+            if (editing) {
+                await api.put(`/auth/users/${editing}`, { fullName: form.fullName, email: form.email, role: form.role });
+                toast.success('User updated');
+            } else {
+                await api.post('/auth/register', form);
+                toast.success('User created successfully');
+            }
             setShowModal(false);
             setForm({ fullName: '', email: '', password: '', role: 'Dispatcher' });
+            setEditing(null);
             loadUsers();
-        } catch (err) { toast.error(err.response?.data?.message || 'Error creating user'); }
+        } catch (err) { toast.error(err.response?.data?.message || 'Error'); }
     };
 
     const handleDelete = async (id) => {
@@ -58,7 +77,7 @@ export default function UserManagement() {
                     <h2>User Management</h2>
                     <p>Manage system users and role assignments</p>
                 </div>
-                <button className="btn btn-primary" onClick={() => setShowModal(true)}><Plus size={18} /> Add User</button>
+                <button className="btn btn-primary" onClick={openCreate}><Plus size={18} /> Add User</button>
             </div>
 
             <div className="table-container">
@@ -85,9 +104,10 @@ export default function UserManagement() {
                                 <td><span className={`status-pill ${getRoleBadgeClass(u.role)}`}>{getRoleLabel(u.role)}</span></td>
                                 <td>{new Date(u.createdAt).toLocaleDateString()}</td>
                                 <td>
-                                    <button className="btn-icon btn-danger" onClick={() => handleDelete(u.id)} title="Delete user">
-                                        <Trash2 size={16} />
-                                    </button>
+                                    <div className="action-buttons">
+                                        <button className="btn-icon" onClick={() => openEdit(u)} title="Edit user"><Pencil size={16} /></button>
+                                        <button className="btn-icon btn-danger" onClick={() => handleDelete(u.id)} title="Delete user"><Trash2 size={16} /></button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
@@ -99,10 +119,10 @@ export default function UserManagement() {
                 <div className="modal-overlay" onClick={() => setShowModal(false)}>
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h3>Create New User</h3>
+                            <h3>{editing ? 'Edit User' : 'Create New User'}</h3>
                             <button className="btn-icon" onClick={() => setShowModal(false)}><X size={20} /></button>
                         </div>
-                        <form onSubmit={handleCreate} className="modal-body">
+                        <form onSubmit={handleSubmit} className="modal-body">
                             <div className="form-grid">
                                 <div className="form-group">
                                     <label>Full Name</label>
@@ -112,10 +132,12 @@ export default function UserManagement() {
                                     <label>Email</label>
                                     <input required type="email" value={form.email} onChange={(e) => setForm(f => ({ ...f, email: e.target.value }))} placeholder="e.g. john@fleet.com" />
                                 </div>
-                                <div className="form-group">
-                                    <label>Password</label>
-                                    <input required type="password" minLength="6" value={form.password} onChange={(e) => setForm(f => ({ ...f, password: e.target.value }))} placeholder="Min 6 characters" />
-                                </div>
+                                {!editing && (
+                                    <div className="form-group">
+                                        <label>Password</label>
+                                        <input required type="password" minLength="6" value={form.password} onChange={(e) => setForm(f => ({ ...f, password: e.target.value }))} placeholder="Min 6 characters" />
+                                    </div>
+                                )}
                                 <div className="form-group">
                                     <label>Role</label>
                                     <select value={form.role} onChange={(e) => setForm(f => ({ ...f, role: e.target.value }))}>
@@ -128,7 +150,7 @@ export default function UserManagement() {
                             </div>
                             <div className="modal-footer">
                                 <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>Cancel</button>
-                                <button type="submit" className="btn btn-primary">Create User</button>
+                                <button type="submit" className="btn btn-primary">{editing ? 'Update User' : 'Create User'}</button>
                             </div>
                         </form>
                     </div>

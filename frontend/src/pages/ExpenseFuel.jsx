@@ -1,13 +1,18 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { Plus, Trash2, X } from 'lucide-react';
+import { Plus, Trash2, X, Pencil } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export default function ExpenseFuel() {
+    const { user } = useAuth();
+    const canWrite = ['Manager', 'Dispatcher'].includes(user?.role);
+    const canEdit = user?.role === 'Manager';
     const [expenses, setExpenses] = useState([]);
     const [vehicles, setVehicles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
+    const [editing, setEditing] = useState(null);
     const [vehicleFilter, setVehicleFilter] = useState('');
     const [form, setForm] = useState({ vehicleId: '', tripId: '', category: 'Fuel', liters: '', cost: '', date: '', notes: '' });
 
@@ -26,16 +31,20 @@ export default function ExpenseFuel() {
         finally { setLoading(false); }
     };
 
-    const handleCreate = async (e) => {
-        e.preventDefault();
+    const openCreate = () => { setEditing(null); setForm({ vehicleId: '', tripId: '', category: 'Fuel', liters: '', cost: '', date: '', notes: '' }); setShowModal(true); };
+    const openEdit = (e) => {
+        setEditing(e.id);
+        setForm({ vehicleId: String(e.vehicleId), tripId: e.tripId ? String(e.tripId) : '', category: e.category, liters: e.liters ? String(e.liters) : '', cost: String(e.cost), date: e.date.split('T')[0], notes: e.notes || '' });
+        setShowModal(true);
+    };
+
+    const handleSubmit = async (ev) => {
+        ev.preventDefault();
+        const payload = { vehicleId: +form.vehicleId, tripId: form.tripId ? +form.tripId : null, category: form.category, liters: form.liters ? +form.liters : null, cost: +form.cost, date: form.date, notes: form.notes };
         try {
-            await api.post('/expenses', {
-                vehicleId: +form.vehicleId, tripId: form.tripId ? +form.tripId : null,
-                category: form.category, liters: form.liters ? +form.liters : null,
-                cost: +form.cost, date: form.date, notes: form.notes
-            });
-            toast.success('Expense logged');
-            setShowModal(false);
+            if (editing) { await api.put(`/expenses/${editing}`, payload); toast.success('Expense updated'); }
+            else { await api.post('/expenses', payload); toast.success('Expense logged'); }
+            setShowModal(false); setEditing(null);
             setForm({ vehicleId: '', tripId: '', category: 'Fuel', liters: '', cost: '', date: '', notes: '' });
             loadData();
         } catch (err) { toast.error(err.response?.data?.message || 'Error'); }
@@ -65,7 +74,7 @@ export default function ExpenseFuel() {
                     <h2>Expense & Fuel Logging</h2>
                     <p>Track operational costs per vehicle</p>
                 </div>
-                <button className="btn btn-primary" onClick={() => setShowModal(true)}><Plus size={18} /> Log Expense</button>
+                {canWrite && <button className="btn btn-primary" onClick={openCreate}><Plus size={18} /> Log Expense</button>}
             </div>
 
             <div className="filters-bar">
@@ -80,8 +89,8 @@ export default function ExpenseFuel() {
                     {Object.entries(vehicleTotals).map(([name, t]) => (
                         <div key={name} className="stat-card">
                             <span className="stat-label">{name}</span>
-                            <span className="stat-value">${t.total.toLocaleString()}</span>
-                            <span className="stat-sub">Fuel: ${t.fuel.toLocaleString()} | Other: ${t.other.toLocaleString()}</span>
+                            <span className="stat-value">₹{t.total.toLocaleString()}</span>
+                            <span className="stat-sub">Fuel: ₹{t.fuel.toLocaleString()} | Other: ₹{t.other.toLocaleString()}</span>
                         </div>
                     ))}
                 </div>
@@ -92,7 +101,7 @@ export default function ExpenseFuel() {
                     <thead>
                         <tr>
                             <th>Vehicle</th><th>Category</th><th>Liters</th>
-                            <th>Cost</th><th>Date</th><th>Notes</th><th>Actions</th>
+                            <th>Cost</th><th>Date</th><th>Notes</th>{canWrite && <th>Actions</th>}
                         </tr>
                     </thead>
                     <tbody>
@@ -103,12 +112,15 @@ export default function ExpenseFuel() {
                                 <td>{e.vehicleName}</td>
                                 <td><span className={`status-pill ${e.category === 'Fuel' ? 'status-dispatched' : 'status-draft'}`}>{e.category}</span></td>
                                 <td>{e.liters ? `${e.liters} L` : '—'}</td>
-                                <td className="font-medium">${e.cost.toLocaleString()}</td>
+                                <td className="font-medium">₹{e.cost.toLocaleString()}</td>
                                 <td>{new Date(e.date).toLocaleDateString()}</td>
                                 <td>{e.notes || '—'}</td>
-                                <td>
-                                    <button className="btn-icon btn-danger" onClick={() => handleDelete(e.id)}><Trash2 size={16} /></button>
-                                </td>
+                                {canWrite && <td>
+                                    <div className="action-buttons">
+                                        {canEdit && <button className="btn-icon" onClick={() => openEdit(e)} title="Edit"><Pencil size={16} /></button>}
+                                        <button className="btn-icon btn-danger" onClick={() => handleDelete(e.id)}><Trash2 size={16} /></button>
+                                    </div>
+                                </td>}
                             </tr>
                         ))}
                     </tbody>
@@ -119,10 +131,10 @@ export default function ExpenseFuel() {
                 <div className="modal-overlay" onClick={() => setShowModal(false)}>
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h3>Log Expense</h3>
+                            <h3>{editing ? 'Edit Expense' : 'Log Expense'}</h3>
                             <button className="btn-icon" onClick={() => setShowModal(false)}><X size={20} /></button>
                         </div>
-                        <form onSubmit={handleCreate} className="modal-body">
+                        <form onSubmit={handleSubmit} className="modal-body">
                             <div className="form-grid">
                                 <div className="form-group">
                                     <label>Vehicle</label>
@@ -146,12 +158,12 @@ export default function ExpenseFuel() {
                                     </div>
                                 )}
                                 <div className="form-group">
-                                    <label>Cost ($)</label>
-                                    <input required type="number" min="0" step="0.01" value={form.cost} onChange={(e) => setForm(f => ({ ...f, cost: e.target.value }))} />
+                                    <label>Cost (₹)</label>
+                                    <input required type="number" min="1" step="0.01" value={form.cost} onChange={(e) => setForm(f => ({ ...f, cost: e.target.value }))} />
                                 </div>
                                 <div className="form-group">
                                     <label>Date</label>
-                                    <input required type="date" value={form.date} onChange={(e) => setForm(f => ({ ...f, date: e.target.value }))} />
+                                    <input required type="date" max={new Date().toISOString().split('T')[0]} value={form.date} onChange={(e) => setForm(f => ({ ...f, date: e.target.value }))} />
                                 </div>
                                 <div className="form-group">
                                     <label>Notes</label>
@@ -160,7 +172,7 @@ export default function ExpenseFuel() {
                             </div>
                             <div className="modal-footer">
                                 <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>Cancel</button>
-                                <button type="submit" className="btn btn-primary">Log Expense</button>
+                                <button type="submit" className="btn btn-primary">{editing ? 'Update' : 'Log Expense'}</button>
                             </div>
                         </form>
                     </div>
